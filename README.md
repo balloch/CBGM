@@ -3,6 +3,34 @@ An asynchronous fork of the original code for [Concept Bottleneck Generative Mod
 
 If you use any of the code or work in this repo or the associated paper please attribute to the original authors
 
+## Installation
+
+ Dependencies can be installed using the following command:
+
+```bash
+pip install -r requirements.txt
+```
+
+## Usage
+Create color-MNIST Dataset:
+
+```bash
+python create_dataset.py
+```
+
+Commands for training GAN without CB on color-MNIST:
+
+```bash
+python train/train_gan.py
+```
+
+Commands for training GAN with CB on color-MNIST:
+
+
+```bash
+python train/train_cb_gan.py
+```
+
 BibTeX:
 ```
 @inproceedings{
