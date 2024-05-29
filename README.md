@@ -1,6 +1,9 @@
 # Concept Bottleneck Generative Models
 
-This is the official open source repository for [Concept Bottleneck Generative Models](https://openreview.net/pdf?id=L9U5MJJleF)
+An asynchronous fork of the original code for  [Concept Bottleneck Generative Models](https://openreview.net/pdf?id=L9U5MJJleF)
+
+If you use any of the code or work in this repo or the associated paper please attribute to the original authors
+
 
 
 
