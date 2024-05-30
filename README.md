@@ -1,44 +1,44 @@
-# Concept Bottleneck Generative Models
-
-An asynchronous fork of the original code for  [Concept Bottleneck Generative Models](https://openreview.net/pdf?id=L9U5MJJleF)
+# CBGM
+An asynchronous fork of the original code for [Concept Bottleneck Generative Models](https://openreview.net/forum?id=L9U5MJJleF)
 
 If you use any of the code or work in this repo or the associated paper please attribute to the original authors
-
-
-
 
 ## Installation
 
  Dependencies can be installed using the following command:
 
 ```bash
-mamba env create --file env.yaml
-conda activate cbgm
+pip install -r requirements.txt
 ```
-
-
-
 
 ## Usage
-
-To run a model you need to specifiy the model type and dataset.
-For example to run a vaegan on celeba training command is as follows:
+Create color-MNIST Dataset:
 
 ```bash
-python main.py -m vaegan -d celeba
+python create_dataset.py
 ```
-While for a vaegan with a concept bottleneck layer is:
+
+Commands for training GAN without CB on color-MNIST:
 
 ```bash
-python main.py -m cb_vaegan -d celeba
+python train/train_gan.py
 ```
 
-
-## License
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at https://www.apache.org/licenses/LICENSE-2.0.
-
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+Commands for training GAN with CB on color-MNIST:
 
 
+```bash
+python train/train_cb_gan.py
+```
 
-
+BibTeX:
+```
+@inproceedings{
+ismail2024concept,
+title={Concept Bottleneck Generative Models},
+author={Aya Abdelsalam Ismail and Julius Adebayo and Hector Corrada Bravo and Stephen Ra and Kyunghyun Cho},
+booktitle={The Twelfth International Conference on Learning Representations},
+year={2024},
+url={https://openreview.net/forum?id=L9U5MJJleF}
+}
+```
