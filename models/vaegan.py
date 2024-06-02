@@ -17,7 +17,7 @@ from models.backbone_models import (
 from models.basic import Basic
 class GAN(Basic):
     def _build_model(self):
-        if(self.dataset_name!='celeba'):
+        if(self.dataset_name == 'color_mnist'):
             self.enc = Encoder_Simple(self.num_channels,self.noise_dim)
             self.dec = Generator_Simple(self.noise_dim,self.num_channels)
             self.dis = Discriminator_Simple(num_channels=self.num_channels)

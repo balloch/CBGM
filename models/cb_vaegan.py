@@ -121,7 +121,7 @@ class CBM_plus_Dec(nn.Module):
 class cbGAN(Basic):
     def _build_model(self):
 
-        if(self.dataset_name!='celeba'):
+        if(self.dataset_name == 'color_mnist'):
             self.enc = Encoder_Simple(self.num_channels,self.noise_dim)
             self.dec = CBM_plus_Dec(self.n_concepts,self.concept_bins,self.emb_size,self.noise_dim,self.concept_type,self.num_channels,self.device,"simple")
             self.dis = Discriminator_Simple(num_channels=self.num_channels)
