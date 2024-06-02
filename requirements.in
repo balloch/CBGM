@@ -6,3 +6,4 @@ torch
 torchvision
 pyyaml
 matplotlib
+pillow

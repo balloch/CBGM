@@ -70,7 +70,7 @@ def main(config):
 		model.dis.to(device)
 	model.to(device)
 
-	dataloader = get_dataset(config)	
+	dataloader, _ = get_dataset(config)	
 	gen_opt = torch.optim.Adam(itertools.chain(model.enc.parameters(),model.dec.parameters()), lr=  config["train_config"]["gen_lr"], betas=literal_eval(config["train_config"]["betas"]))
 	dis_opt = torch.optim.Adam(model.dis.parameters(), lr=  config["train_config"]["dis_lr"], betas=literal_eval(config["train_config"]["betas"]))
 	

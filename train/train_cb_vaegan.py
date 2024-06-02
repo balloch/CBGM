@@ -23,6 +23,64 @@ warnings.filterwarnings("ignore", category=UserWarning)
 import time
 
 
+def test_acc_concepts(model, dataloader, device, epoch):
+	no_samples=0
+	correct=[0 for c in range (model.n_concepts) ]
+
+	concept_df = pd.DataFrame()
+	for i, (real_imgs, concepts) in enumerate(dataloader):
+		real_imgs = real_imgs.to(device).float()
+		batch_size=real_imgs.shape[0]
+		no_samples+=batch_size
+
+		concept_str = []
+		for con in concepts:
+			if len(concept_str) == 0:
+				concept_str = [str(int(c)) for c in con.tolist()]
+			else:
+				concept_str = [str(int(c1)) + str(int(c2)) for c1, c2 in zip(concept_str, con.tolist())]
+
+		new_concept_df = pd.DataFrame(concept_str, columns=['ground_truth'])
+		count = 0
+
+		_, _, latent = model.enc(real_imgs)
+		_,logits,_,_= model.dec(latent,return_all=True)
+		for c in range(model.n_concepts):
+			
+			concepts[c]=concepts[c].to(device)
+			if(model.concept_type[c]=="cat"):
+				cat_onehot = torch.zeros(batch_size, model.concept_bins[c], dtype=torch.float, device=device)
+				cat_onehot.scatter_(1, concepts[c].long().unsqueeze(-1), 1)
+			elif(model.concept_type[c]=="bin"):
+				cat_onehot = torch.zeros(batch_size, model.concept_bins[c], dtype=torch.float, device=device)
+				cat_onehot[:,0]=concepts[c]
+				cat_onehot[:,1]=1-concepts[c]
+			c_real_concepts=torch.argmax(cat_onehot, dim=1) 
+
+			start,end = get_concept_index(model,c)
+			c_pred_concepts=logits[:,start:end]
+
+			argmax_c_pred_concepts = torch.argmax(c_pred_concepts, dim=1)
+			num_correct = torch.sum(c_real_concepts==argmax_c_pred_concepts).item()
+
+			new_concept_df['c' + str(count)] = (1 - argmax_c_pred_concepts).cpu().tolist()
+			count += 1 
+			
+			correct[c]+=num_correct
+
+		concept_df = pd.concat([concept_df, new_concept_df])
+
+
+	for c in range(model.n_concepts):
+		correct[c]=correct[c]/no_samples
+		print("Concept %s [Acc %.3f]"%  (model.concept_name[c],correct[c]),end =" ")
+
+	print()
+	concept_df['ground_truth'] = concept_df['ground_truth'].astype('str') 
+	concept_df.to_csv('test_concepts_epoch' + str(epoch) + '.csv', index=False)
+	return correct
+
+
 def get_concept_index(model,c):
 	if c==0:
 		start=0
@@ -31,6 +89,8 @@ def get_concept_index(model,c):
 	end= sum(model.concept_bins[:c+1])
 
 	return start,end
+
+
 def get_concept_loss(model, predicted_concepts, concepts,isList=False):
 	concept_loss = 0
 	loss_ce = nn.CrossEntropyLoss()
@@ -46,6 +106,8 @@ def get_concept_loss(model, predicted_concepts, concepts,isList=False):
 		concept_loss+=c_concept_loss
 		concept_loss_lst.append(c_concept_loss)
 	return concept_loss,concept_loss_lst
+
+
 def main(config):
 
 	use_cuda =  config["train_config"]["use_cuda"] and  torch.cuda.is_available()
@@ -98,7 +160,7 @@ def main(config):
 		model.dis.to(device)
 	model.to(device)
 
-	dataloader = get_dataset(config)	
+	dataloader, test_loader = get_dataset(config)	
 	gen_opt = torch.optim.Adam(itertools.chain(model.enc.parameters(),model.dec.parameters()), lr=  config["train_config"]["gen_lr"], betas=literal_eval(config["train_config"]["betas"]))
 	dis_opt = torch.optim.Adam(model.dis.parameters(), lr=  config["train_config"]["dis_lr"], betas=literal_eval(config["train_config"]["betas"]))
 	
@@ -268,6 +330,7 @@ def main(config):
 
 
 		model.eval()
+		test_acc_concepts(model, test_loader, device)
 				
 		if config["evaluation"]["save_images"]:
 			save_image(gen_imgs.data, save_image_loc+"%d.png" % epoch, nrow=8, normalize=True)
@@ -276,7 +339,7 @@ def main(config):
 
 
 		if config["train_config"]["save_model"]:
-			torch.save(model.dec.state_dict(), "models/"+save_model_name+".pt")
+			torch.save(model.state_dict(), "models/" + save_model_name + "_" + str(epoch) + ".pt")
 
 
 		end = time.time()

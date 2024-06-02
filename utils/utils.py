@@ -9,6 +9,8 @@ from datasets import celeba
 from ast import literal_eval
 import os
 
+from utils.datasets import create_libero_dataset, Libero
+
 def sample_noise(num, dim, device=None) -> torch.Tensor:
     return torch.randn(num, dim, device=device)
 
@@ -66,6 +68,7 @@ def get_dataset(config,batch_size=None):
                     ])),
             batch_size=batch_size,
             shuffle=True)
+        test_loader = None
     elif(config["dataset"]["name"] =="celeba"):
         CELEBA_CONFIG = dict(
         batch_size=config["dataset"]["batch_size"],
@@ -82,5 +85,27 @@ def get_dataset(config,batch_size=None):
         )
 
         train_loader = celeba.generate_data(CELEBA_CONFIG,ds_for_generation=True)
+        test_loader = None
+    elif(config["dataset"]["name"] =="libero"):
+        if config["dataset"]["load_saved"]:
+            train_loader = torch.utils.data.DataLoader(
+                Libero(root='./data', env='train',
+                        transform=transforms.Compose([transforms.Resize(config["dataset"]["img_size"]),
+                            transforms.ToTensor(),
+                        ])),
+                batch_size=batch_size,
+                shuffle=True,
+            )
 
-    return train_loader 
+            test_loader = torch.utils.data.DataLoader(
+                Libero(root='./data', env='test',
+                        transform=transforms.Compose([transforms.Resize(config["dataset"]["img_size"]),
+                            transforms.ToTensor(),
+                        ])),
+                batch_size=config["dataset"]["test_batch_size"],
+                shuffle=True,
+            )
+        else:
+            train_loader, test_loader = create_libero_dataset(config, batch_size)
+
+    return train_loader, test_loader

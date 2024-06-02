@@ -1,0 +1,63 @@
+dataset:
+  name: libero
+  transforms_1: (0.5)
+  transforms_2: (0.5)
+  load_saved: False
+  save: True
+  img_dir: ../LIBERO/libero/datasets/libero_90/
+  bddl_dir: ../LIBERO/libero/libero/bddl_files/libero_90/
+  train_test_split: 0.8
+  img_size: 128
+  batch_size: 64
+  test_batch_size: 1000
+  num_channels: 3
+model:
+  type: cbgan
+  latent_noise_dim: 64
+  input_latent_dim: 10
+  has_concepts: True
+  concepts: 
+      concept_bins: [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]
+      concept_names: [
+        'white_yellow_mug',
+        'butter',
+        'wine_bottle',
+        'yellow_book',
+        'ketchup',
+        'tomato_sauce',
+        'orange_juice',
+        'porcelain_mug',
+        'chefmate_8_frypan',
+        'cream_cheese',
+        'plate',
+        'chocolate_pudding',
+        'red_coffee_mug',
+        'moka_pot',
+        'basket',
+        'milk',
+        'white_bowl',
+        'wooden_tray',
+        'akita_black_bowl',
+        'alphabet_soup',
+        'black_book',
+        'new_salad_dressing'
+      ]
+      concept_latent: [10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10]
+      emb_size: 16
+      concept_output: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+      types: ["bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin"]
+
+train_config:
+  epochs: 50
+  gen_lr: 0.0002
+  dis_lr: 0.0002
+  betas: (.5, .99)
+  save_model: True
+  use_cuda: True
+  log_interval: 100
+  plot_loss: True
+evaluation:
+  generation: True
+  save_images: True
+  save_concept_image: True
+  save_results: True
