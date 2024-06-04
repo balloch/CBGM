@@ -2,21 +2,26 @@ dataset:
   name: libero
   transforms_1: (0.5)
   transforms_2: (0.5)
-  load_saved: False
+  load_saved: True
   save: True
   img_dir: ../LIBERO/libero/datasets/libero_90/
   bddl_dir: ../LIBERO/libero/libero/bddl_files/libero_90/
   train_test_split: 0.8
   img_size: 128
-  batch_size: 64
+  batch_size: 512
   test_batch_size: 1000
   num_channels: 3
+  num_concepts: 22
 model:
-  type: cbgan
-  latent_noise_dim: 64
-  input_latent_dim: 10
+  type: cb_vaegan
+  latent_noise_dim: 256
+  input_latent_dim: 64
+  pre_concept_latent_dim: 256
+  pre_concept_layers: 1
   has_concepts: True
-  concepts: 
+  concepts:
+      emb_size: 32
+      concept_output: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
       concept_bins: [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]
       concept_names: [
         'white_yellow_mug',
@@ -42,16 +47,14 @@ model:
         'black_book',
         'new_salad_dressing'
       ]
-      concept_latent: [10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10]
-      emb_size: 16
-      concept_output: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
       types: ["bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin"]
-
+      concept_latent: [64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64]
+      concept_hidden: [124,124,124,124,124,124,124,124,124,124,124,124,124,124,124,124,124,124,124,124,124,124]
 train_config:
-  epochs: 50
-  gen_lr: 0.0002
+  epochs: 60
+  gen_lr: 0.0006
   dis_lr: 0.0002
-  betas: (.5, .99)
+  betas: (.5, .999)
   save_model: True
   use_cuda: True
   log_interval: 100
@@ -59,5 +62,4 @@ train_config:
 evaluation:
   generation: True
   save_images: True
-  save_concept_image: True
   save_results: True
