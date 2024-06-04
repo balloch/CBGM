@@ -32,30 +32,32 @@ def test_acc_concepts(model, dataloader, device, epoch):
 		real_imgs = real_imgs.to(device).float()
 		batch_size=real_imgs.shape[0]
 		no_samples+=batch_size
+		concepts = concepts.to(device)
 
-		concept_str = []
-		for con in concepts:
-			if len(concept_str) == 0:
-				concept_str = [str(int(c)) for c in con.tolist()]
-			else:
-				concept_str = [str(int(c1)) + str(int(c2)) for c1, c2 in zip(concept_str, con.tolist())]
+		concept_str_list = []
+		concept_list = concepts.tolist()
+		for con in concept_list:
+			con = [int(c) for c in con]
+			concept_str = ''.join(map(str,con))
+			concept_str_list.append(concept_str)
 
-		new_concept_df = pd.DataFrame(concept_str, columns=['ground_truth'])
+		new_concept_df = pd.DataFrame(concept_str_list, columns=['ground_truth'])
+		new_concept_df.to_csv('test_concepts_epoch' + str(epoch) + '.csv', index=False)
 		count = 0
 
 		_, _, latent = model.enc(real_imgs)
 		_,logits,_,_= model.dec(latent,return_all=True)
+
 		for c in range(model.n_concepts):
-			
-			concepts[c]=concepts[c].to(device)
+			concept_c=concepts[:,c]
 			if(model.concept_type[c]=="cat"):
 				cat_onehot = torch.zeros(batch_size, model.concept_bins[c], dtype=torch.float, device=device)
-				cat_onehot.scatter_(1, concepts[c].long().unsqueeze(-1), 1)
+				cat_onehot.scatter_(1,concept_c.long().unsqueeze(-1), 1)
 			elif(model.concept_type[c]=="bin"):
 				cat_onehot = torch.zeros(batch_size, model.concept_bins[c], dtype=torch.float, device=device)
-				cat_onehot[:,0]=concepts[c]
-				cat_onehot[:,1]=1-concepts[c]
-			c_real_concepts=torch.argmax(cat_onehot, dim=1) 
+				cat_onehot[:,0]=concept_c
+				cat_onehot[:,1]=1-concept_c
+			c_real_concepts = torch.argmax(cat_onehot, dim=1)
 
 			start,end = get_concept_index(model,c)
 			c_pred_concepts=logits[:,start:end]
@@ -69,7 +71,6 @@ def test_acc_concepts(model, dataloader, device, epoch):
 			correct[c]+=num_correct
 
 		concept_df = pd.concat([concept_df, new_concept_df])
-
 
 	for c in range(model.n_concepts):
 		correct[c]=correct[c]/no_samples
@@ -187,6 +188,7 @@ def main(config):
 		start = time.time()
 
 		for i, (imgs, concepts) in enumerate(dataloader):
+
 			if config["dataset"]["name"]=='celeba':
 				_,concepts = concepts
 
@@ -330,7 +332,7 @@ def main(config):
 
 
 		model.eval()
-		test_acc_concepts(model, test_loader, device)
+		test_acc_concepts(model, test_loader, device, epoch)
 				
 		if config["evaluation"]["save_images"]:
 			save_image(gen_imgs.data, save_image_loc+"%d.png" % epoch, nrow=8, normalize=True)

@@ -1,9 +1,12 @@
 
 import os
+import random
 
 import numpy as np
+import pandas as pd
 from PIL import Image
 
+import h5py
 import matplotlib.pyplot as plt
 
 import torch
@@ -114,7 +117,7 @@ class Libero(datasets.VisionDataset):
     if self.target_transform is not None:
       target = self.target_transform(target)
 
-    return img, [
+    return img, torch.tensor([
         white_yellow_mug,
         butter,
         wine_bottle,
@@ -136,7 +139,7 @@ class Libero(datasets.VisionDataset):
         akita_black_bowl,
         alphabet_soup,
         black_book,
-        new_salad_dressing]
+        new_salad_dressing])
 
   def __len__(self):
     return len(self.data_label_tuples)
