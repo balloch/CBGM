@@ -78,7 +78,7 @@ class Libero(datasets.VisionDataset):
       self.data_label_tuples = loaded_tensor
     else:
       if env in ['train', 'test']:
-        self.data_label_tuples = torch.load(os.path.join(self.root, 'libero', env) + '.pt')
+        self.data_label_tuples = torch.load(os.path.join(self.root, 'libero_90', env) + '.pt')
 
   def __getitem__(self, index):
     """
@@ -88,6 +88,19 @@ class Libero(datasets.VisionDataset):
     Returns:
         tuple: (image, target) where target is index of the target class.
     """
+    # img, [
+    #     alphabet_soup,
+    #     basket,
+    #     salad_dressing,
+    #     cream_cheese,
+    #     milk,
+    #     tomato_sauce, 
+    #     butter,
+    #     bbq_sauce,
+    #     chocolate_pudding,
+    #     ketchup,
+    #     orange_juice] = self.data_label_tuples[index]
+
     img, [
         white_yellow_mug,
         butter,
@@ -111,11 +124,25 @@ class Libero(datasets.VisionDataset):
         alphabet_soup,
         black_book,
         new_salad_dressing] = self.data_label_tuples[index]
+
     if self.transform is not None:
       img = self.transform(img)
 
     if self.target_transform is not None:
       target = self.target_transform(target)
+
+    # return img, torch.tensor([
+    #     alphabet_soup,
+    #     basket,
+    #     salad_dressing,
+    #     cream_cheese,
+    #     milk,
+    #     tomato_sauce, 
+    #     butter,
+    #     bbq_sauce,
+    #     chocolate_pudding,
+    #     ketchup,
+    #     orange_juice])
 
     return img, torch.tensor([
         white_yellow_mug,
@@ -145,6 +172,20 @@ class Libero(datasets.VisionDataset):
     return len(self.data_label_tuples)
 
 
+# concept_dict = {
+#     'alphabet_soup': 0,
+#     'basket': 1,
+#     'salad_dressing': 2,
+#     'cream_cheese': 3,
+#     'milk': 4,
+#     'tomato_sauce': 5, 
+#     'butter': 6,
+#     'bbq_sauce': 7,
+#     'chocolate_pudding': 8,
+#     'ketchup': 9,
+#     'orange_juice': 10
+# }
+
 concept_dict = {
     'white_yellow_mug': 0,
     'butter': 1,
@@ -169,6 +210,7 @@ concept_dict = {
     'black_book': 20,
     'new_salad_dressing': 21
 }
+
 train_set = []
 test_set = []
 train_files = []
@@ -191,12 +233,16 @@ def get_bddl(file):
 
     arr = np.zeros(len(concept_dict.keys()))
     concept_list = [concept_dict[c] for c in concept_list]
+    # with open('concepts.txt', 'a') as f:
+    #   for line in concept_list:
+    #       f.write(f"{line}\n")
     arr[concept_list] = 1
     return arr.tolist()
 
 
 def create_libero_dataset(config, batch_size):
     for filename in os.listdir(config["dataset"]["img_dir"]):
+      try:
         with h5py.File(config["dataset"]["img_dir"] + filename, "r") as img_file:
             filename = filename.split('_demo')[0] + ".bddl"
             bddl_file = open(config["dataset"]["bddl_dir"] + filename, 'r')
@@ -212,6 +258,8 @@ def create_libero_dataset(config, batch_size):
                     else:
                         test_set.append((img,concepts))
                         test_files.append(filename.split('.bddl')[0])
+      except:
+         continue
 
 
     if not os.path.exists('data/libero'):
@@ -225,8 +273,12 @@ def create_libero_dataset(config, batch_size):
 
     train_loader = torch.utils.data.DataLoader(
         Libero(loaded_tensor=train_set,
-            transform=transforms.Compose([transforms.Resize(config["dataset"]["img_size"]),
+            transform=transforms.Compose([
+                transforms.Resize(config["dataset"]["img_size"]),
+                # transforms.CenterCrop(config["dataset"]["img_size"]),
                 transforms.ToTensor(),
+                # transforms.ConvertImageDtype(torch.float32),
+                # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
             ])),
         batch_size=batch_size,
         shuffle=True,
@@ -234,8 +286,12 @@ def create_libero_dataset(config, batch_size):
 
     test_loader = torch.utils.data.DataLoader(
         Libero(loaded_tensor=test_set,
-                transform=transforms.Compose([transforms.Resize(config["dataset"]["img_size"]),
+                transform=transforms.Compose([
+                    transforms.Resize(config["dataset"]["img_size"]),
+                    # transforms.CenterCrop(config["dataset"]["img_size"]),
                     transforms.ToTensor(),
+                    # transforms.ConvertImageDtype(torch.float32),
+                    # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
                 ])),
         batch_size=config["dataset"]["test_batch_size"],
         shuffle=True,
