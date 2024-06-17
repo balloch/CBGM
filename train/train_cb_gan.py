@@ -186,19 +186,20 @@ def main():
 			
 			batch_size = imgs.shape[0]
 			for c in range(model.n_concepts):
-				concepts[c]=concepts[c].to(device)
+				concepts[:,c]=concepts[:,c].to(device)
+				concept_c = concepts[:,c]
 				if(model.concept_type[c]=="cat"):
 					cat_onehot = torch.zeros(batch_size, model.concept_bins[c], dtype=torch.float, device=device)
-					cat_onehot.scatter_(1, concepts[c].long().unsqueeze(-1), 1)
+					cat_onehot.scatter_(1, concept_c.long().unsqueeze(-1), 1)
 				elif(model.concept_type[c]=="bin"):
 					cat_onehot = torch.zeros(batch_size, model.concept_bins[c], dtype=torch.float, device=device)
-					cat_onehot[:,0]=concepts[c]
-					cat_onehot[:,1]=1-concepts[c]
-				concepts[c]=cat_onehot
+					cat_onehot[:,0]=concept_c
+					cat_onehot[:,1]=1-concept_c
+				concept_c=cat_onehot
 				if(c==0):
-					real_concepts=concepts[c]
+					real_concepts=concept_c
 				else:
-					real_concepts=torch.cat((real_concepts,concepts[c]),1)
+					real_concepts=torch.cat((real_concepts,concept_c),1)
 			# Adversarial ground truths
 			valid = Variable(FloatTensor(batch_size, 1).fill_(1.0), requires_grad=False)
 			fake = Variable(FloatTensor(batch_size, 1).fill_(0.0), requires_grad=False)
@@ -334,7 +335,7 @@ def main():
 
 
 		model.eval()
-		concept_test_acc = test_acc_concepts(model,test_loader,device)
+		# concept_test_acc = test_acc_concepts(model,test_loader,device)
 		
 		if config["evaluation"]["save_images"]:
 			save_image(gen_imgs.data, save_image_loc+"%d.png" % epoch, nrow=8, normalize=True)
@@ -343,7 +344,7 @@ def main():
 
 
 		if config["train_config"]["save_model"]:
-			torch.save(model.dec.state_dict(), "models/"+save_model_name+".pt")
+			torch.save(model.state_dict(), "models/" + save_model_name + "_" + str(epoch) + ".pt")
 
 
 		end = time.time()
