@@ -1,0 +1,56 @@
+dataset:
+  name: libero
+  transforms_1: (0.5)
+  transforms_2: (0.5)
+  load_saved: True
+  save: True
+  img_dir: ../LIBERO/libero/datasets/libero_object/
+  bddl_dir: ../LIBERO/libero/libero/bddl_files/libero_object/
+  train_test_split: 0.8
+  img_size: 128
+  batch_size: 256
+  test_batch_size: 1000
+  num_channels: 3
+  num_concepts: 11
+model:
+  type: cb_gan
+  latent_noise_dim: 64
+  input_latent_dim: 10
+  pre_concept_latent_dim: 124
+  pre_concept_layers: 5
+  has_concepts: True
+  concepts:
+      emb_size: 16
+      concept_output: [1,1,1,1,1,1,1,1,1,1,1]
+      concept_bins: [2,2,2,2,2,2,2,2,2,2,2]
+      concept_names: [
+        'alphabet_soup',
+        'basket',
+        'salad_dressing',
+        'cream_cheese',
+        'milk',
+        'tomato_sauce',
+        'butter',
+        'bbq_sauce',
+        'chocolate_pudding',
+        'ketchup',
+        'orange_juice'
+      ]
+      types: ["bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin", "bin"]
+      concept_latent: [10,10,10,10,10,10,10,10,10,10,10]
+      concept_hidden: [124,124,124,124,124,124,124,124,124,124,124]
+train_config:
+  epochs: 60
+  gen_lr: 0.0002
+  dis_lr: 0.0002
+  betas: (.5, .99)
+  save_model: True
+  use_cuda: True
+  log_interval: 100
+  plot_loss: True
+evaluation:
+  generation: True
+  save_images: True
+  save_concept_image: True
+  score_concepts: True
+  save_results: True
