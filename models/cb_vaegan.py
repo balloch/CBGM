@@ -125,6 +125,10 @@ class cbGAN(Basic):
             self.enc = Encoder_Simple(self.num_channels,self.noise_dim)
             self.dec = CBM_plus_Dec(self.n_concepts,self.concept_bins,self.emb_size,self.noise_dim,self.concept_type,self.num_channels,self.device,"simple")
             self.dis = Discriminator_Simple(num_channels=self.num_channels)
+        elif('libero' in self.dataset_name):
+            self.enc = Encoder_Simple(self.num_channels,self.noise_dim)
+            self.dec = CBM_plus_Dec(self.n_concepts,self.concept_bins,self.emb_size,self.noise_dim,self.concept_type,self.num_channels,self.device,"simple")
+            self.dis = Discriminator_Simple(num_channels=self.num_channels)
         else:
             self.enc = Encoder(noise_dim=self.noise_dim)
             self.dec = CBM_plus_Dec(self.n_concepts,self.concept_bins,self.emb_size,self.noise_dim,self.concept_type,self.num_channels,self.device,"regular")

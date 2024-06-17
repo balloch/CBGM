@@ -3,7 +3,7 @@ from torch import nn
 from torch.nn import functional as F
 import numpy as np
 from utils.utils import sample_code , sample_noise 
-from models.backbone_models import Generator,Encoder,Discriminator
+from models.backbone_models import Generator_Simple,Encoder_Simple,Discriminator_Simple
 from models.basic import Basic
 
 class CBM_plus_Dec(nn.Module):
@@ -50,7 +50,7 @@ class CBM_plus_Dec(nn.Module):
 
         self.g_latent=self.emb_size*(self.n_concepts+1)
         self.g_latent+=sum(self.concept_bins)
-        self.gen = Generator(self.g_latent,self.num_channels)
+        self.gen = Generator_Simple(self.g_latent,self.num_channels)
 
 
     def forward(self,h,probs=None,return_all=False):
@@ -64,11 +64,11 @@ class CBM_plus_Dec(nn.Module):
             if c <self.n_concepts :
                 ### 2 get prob given concept
                 if(probs==None):
-                	logits =  self.concept_prob_generators[c](context)
-                	prob_gumbel = F.softmax(logits)
+                    logits =  self.concept_prob_generators[c](context)
+                    prob_gumbel = F.softmax(logits)
                 else:
                     logits=probs[c]
-                    prob_gumbel=probs[c]
+                    prob_gumbel = F.softmax(logits)
                 for i in range(self.concept_bins[c]):
                     temp_concept_latent =  context[:, (i*self.emb_size):((i+1)*self.emb_size)] * prob_gumbel[:,i].unsqueeze(-1)
                     if i==0:
@@ -109,10 +109,10 @@ class CBM_plus_Dec(nn.Module):
 class cbGAN(Basic):
     def _build_model(self):
 
-        self.enc = Encoder(self.num_channels,self.noise_dim)
+        self.enc = Encoder_Simple(self.num_channels,self.noise_dim)
         self.dec = CBM_plus_Dec(self.n_concepts,self.concept_bins,self.emb_size,self.noise_dim,self.concept_type,self.num_channels,self.device)
 
-        self.dis = Discriminator(num_channels=self.num_channels)
+        self.dis = Discriminator_Simple(num_channels=self.num_channels)
 
         self.apply(_weights_init)
 
