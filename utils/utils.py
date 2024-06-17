@@ -86,11 +86,12 @@ def get_dataset(config,batch_size=None):
 
         train_loader = celeba.generate_data(CELEBA_CONFIG,ds_for_generation=True)
         test_loader = None
-    elif(config["dataset"]["name"] =="libero"):
+    elif("libero" in config["dataset"]["name"]):
         if config["dataset"]["load_saved"]:
             train_loader = torch.utils.data.DataLoader(
                 Libero(root='./data', env='train',
-                        transform=transforms.Compose([transforms.Resize(config["dataset"]["img_size"]),
+                        transform=transforms.Compose([
+                            transforms.Resize(config["dataset"]["img_size"]),
                             transforms.ToTensor(),
                         ])),
                 batch_size=batch_size,
@@ -99,7 +100,8 @@ def get_dataset(config,batch_size=None):
 
             test_loader = torch.utils.data.DataLoader(
                 Libero(root='./data', env='test',
-                        transform=transforms.Compose([transforms.Resize(config["dataset"]["img_size"]),
+                        transform=transforms.Compose([
+                            transforms.Resize(config["dataset"]["img_size"]),
                             transforms.ToTensor(),
                         ])),
                 batch_size=config["dataset"]["test_batch_size"],
